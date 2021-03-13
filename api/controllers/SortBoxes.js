@@ -1,8 +1,10 @@
-module.exports = () => {
+    module.exports = () => {
+    const Box = require('../models/Box')
     const controller ={}
-    const test = {
-        "data": [0,1,2,3,4,5,6,7,8,9]
+    controller.sortBoxes = (req, res) => {
+        const response = Box.optimizeBox(req.body)
+        res.status(200).json(response)
+
     }
-    controller.sortBoxes = (req, res) => res.status(200).json(test)
     return controller
 }
