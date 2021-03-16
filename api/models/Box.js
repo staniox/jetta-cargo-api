@@ -60,96 +60,55 @@ const orderPriority = (data) =>{
 }
 
 const getCalc =(length, amount, width, height, container, priority) =>{
-    let result = {box1:0,box2:0,box3:0}
-       let loadedContainerL = parseFloat(container.length);
-       let loadedContainerW = parseFloat(container.width);
-       let loadedContainerH = parseFloat(container.height);
-       let debug = []
+    let debug = []
+    let resultCount = {box1:0,box2:0,box3:0}
+    let result = {box1:[],box2:[],box3:[], count: resultCount, debug:debug}
+    let countL = -1;
+    let countW = -1;
+    let countH = -1;
         for(let i = 0; i < 3; i++){
            // debug.push(['resultCount',i])
             // debug.push(['i',length[i],width[i], height[i]])
             // debug.push(['container',i, amount[i],length[i],loadedContainerL,  loadedContainerW, loadedContainerH]);
             // debug.push([length[i] <= loadedContainerL,width[i] <= loadedContainerW,height[i] <= loadedContainerH])
             if (amount[i] > 0
-                && (length[i] <= loadedContainerL
-                || width[i] <= loadedContainerW
-                || height[i] <= loadedContainerH))
+                && length[i] <= container.length
+                && width[i] <= container.width
+                && height[i] <= container.height)
             {
              //   debug.push([i,length[i]]);
                 let countFree=0;
                 //debug.push(['countfree',countFree])
-                let l = length[i] <= loadedContainerL ? loadedContainerL : container.length ;
-                if(l!=container.length){
-                    countFree++;
-                }
-               // debug.push(['countfree',countFree])
-                let w = width[i] <= loadedContainerW ? loadedContainerW : container.width;
-                if(w!=container.width){
-                    debug.push(['countfree',countFree,length[i], loadedContainerW,container.width])
-                    if(countFree>0){
-                        countFree++;
-                        w=container.width
-                    }
-                }
+                let l = container.length ;
                // debug.push(['countfree',countFree,w!=container.width])
-                let h = height[i] <= loadedContainerH ? loadedContainerH : container.height;
-                if(h!=container.height){
-                    if(countFree>0){
-                        countFree++;
-                        h=container.height
-                    }
-                }
+                let h = container.height;
+
                 //debug.push(['countfree',countFree])
 
                 //debug.push([l,container.length,l!=container.length,w,container.width,w!=container.width, h,container.height,h!=container.height])
-                if(countFree >1)
-                    --i < 0 ? i=0 : i--
+
                 let a = amount[i];
-                let countL = 0;
-                let countW = 0;
-                let countH = 0;
-                while (length[i] <= l && a > 0){
-                    l -= length[i]
-                    countL++;
-                    a--;
-                }
-                while (width[i] <= w && a > 0){
-                    w -= width[i]
+
+
+                while (width[i] <= container.width && a > 0){
+                    container.width -=width[i]
                     countW++;
-                    a--;
-                }
-                while (height[i] <= h && a > 0){
-                    h -= height[i]
-                    countH++;
-                    a--;
-                }
-                let resultCount = countL * countW * countH
-             // debug.push(['resultCount',resultCount,  countL , countW , countH])
+                    l = container.length ;
+                    h = container.height;
+                    while (height[i] <= h && a > 0){
 
-                if( resultCount <= amount[i] ){
-                    result[priority[i]] = resultCount
-                    if(countFree >0){
-                        loadedContainerL -= l;
-                        loadedContainerW -= w;
-                        loadedContainerH -= h;
+                        h -=height[i]
+                        countH++;
+                        l = container.length ;
+                        while (length[i] <= l && a > 0){
+                            countL++;
+                            result[priority[i]].push([countW,countH,countL])
+                            debug.push([countW,countH])
+                            l -=length[i]
+                            resultCount[priority[i]]++
+                            a--;
+                        }
                     }
-                    else {
-                        loadedContainerL = l;
-                        loadedContainerW = w;
-                        loadedContainerH = h;
-                    }
-
-                }
-                else {
-                    result[priority[i]] = amount[i]
-                   // debug.push([loadedContainerL,loadedContainerW, loadedContainerH])
-                    loadedContainerL -= (countL*length[i]);
-                    loadedContainerW -= (countW*width[i]);
-                    loadedContainerH -= (countH*height[i]);
-                    //amount[i] = 0
-                    // debug.push([amount[i],length[i] , width[i] , height[i]])
-                    // debug.push([amount[i]*length[i],amount[i]*width[i],amount[i]*height[i]])
-                    // debug.push([loadedContainerL,loadedContainerW, loadedContainerH])
                 }
             }
         }
