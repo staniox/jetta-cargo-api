@@ -6,10 +6,10 @@ Box.optimizeBox = () => {
     let data = JSON.parse( JSON.stringify( this.data ))
     let order = orderPriority(data)
 
-    let length = [parseFloat(data[order[0]].length),parseFloat(data[order[1]].length),parseFloat(data[order[2]].length)]
-    let amount = [parseFloat(data[order[0]].amount),parseFloat(data[order[1]].amount),parseFloat(data[order[2]].amount)]
-    let width  = [parseFloat(data[order[0]].width),parseFloat(data[order[1]].width),parseFloat(data[order[2]].width)]
-    let height = [parseFloat(data[order[0]].height),parseFloat(data[order[1]].height),parseFloat(data[order[2]].height)]
+    let length = [data[order[0]].length,data[order[1]].length,data[order[2]].length]
+    let amount = [data[order[0]].amount,data[order[1]].amount,data[order[2]].amount]
+    let width  = [data[order[0]].width,data[order[1]].width,data[order[2]].width]
+    let height = [data[order[0]].height,data[order[1]].height,data[order[2]].height]
 
     let calculate = getCalc(length, amount,width,height,data.container, order)
 
@@ -62,48 +62,36 @@ const orderPriority = (data) =>{
 const getCalc =(length, amount, width, height, container, priority) =>{
     let debug = []
     let resultCount = {box1:0,box2:0,box3:0}
-    let result = {box1:[],box2:[],box3:[], count: resultCount, debug:debug}
+    let result = {box1:[],box2:[],box3:[], count: resultCount, debug:debug, volume:0}
     let countL = -1;
     let countW = -1;
     let countH = -1;
+    let containerAux = JSON.parse( JSON.stringify( container ));
         for(let i = 0; i < 3; i++){
-           // debug.push(['resultCount',i])
-            // debug.push(['i',length[i],width[i], height[i]])
-            // debug.push(['container',i, amount[i],length[i],loadedContainerL,  loadedContainerW, loadedContainerH]);
-            // debug.push([length[i] <= loadedContainerL,width[i] <= loadedContainerW,height[i] <= loadedContainerH])
             if (amount[i] > 0
-                && length[i] <= container.length
-                && width[i] <= container.width
-                && height[i] <= container.height)
+                && length[i] <= containerAux.length
+                && width[i] <= containerAux.width
+                && height[i] <= containerAux.height)
             {
-             //   debug.push([i,length[i]]);
-                let countFree=0;
-                //debug.push(['countfree',countFree])
-                let l = container.length ;
-               // debug.push(['countfree',countFree,w!=container.width])
-                let h = container.height;
-
-                //debug.push(['countfree',countFree])
-
-                //debug.push([l,container.length,l!=container.length,w,container.width,w!=container.width, h,container.height,h!=container.height])
+                let l = containerAux.length ;
+                let h = containerAux.height;
 
                 let a = amount[i];
 
 
-                while (width[i] <= container.width && a > 0){
-                    container.width -=width[i]
+                while (width[i] <= containerAux.width && a > 0){
+                    containerAux.width -=width[i]
                     countW++;
-                    l = container.length ;
-                    h = container.height;
+                    l = containerAux.length ;
+                    h = containerAux.height;
                     while (height[i] <= h && a > 0){
 
                         h -=height[i]
                         countH++;
-                        l = container.length ;
+                        l = containerAux.length ;
                         while (length[i] <= l && a > 0){
                             countL++;
-                            result[priority[i]].push([countW,countH,countL])
-                            debug.push([countW,countH])
+                            result[priority[i]].push([countW,countH,countL]) // debug.push([countW,countH])
                             l -=length[i]
                             resultCount[priority[i]]++
                             a--;
@@ -112,7 +100,20 @@ const getCalc =(length, amount, width, height, container, priority) =>{
                 }
             }
         }
+
+        let volumeBox1 = getVolume(resultCount.box1, length[0],width[0],height[0] )
+
+        let volumeBox2 = getVolume(resultCount.box2, length[1],width[1],height[1] )
+        let volumeBox3 = getVolume(resultCount.box3, length[2],width[2],height[2] )
+
+        let volumeContainer = getVolume(1, container.length, container.width, container.height )
+        result.volume = ((volumeBox1 + volumeBox2 + volumeBox3) / volumeContainer * 100).toFixed(2)
+
     return result
+}
+
+const getVolume = (amount, length, width, height) =>{
+    return amount * ((length*100) * (width*100) * (height*100))/100
 }
 
 module.exports = Box;
